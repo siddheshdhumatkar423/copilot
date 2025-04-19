@@ -1,0 +1,39 @@
+name: CI/CD Pipeline with Docker
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      # Log in to DockerHub (if pushing the image)
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build the Docker image
+      - name: Build Docker image
+        run: docker build -t my-app .
+
+      # Run container for testing
+      - name: Test Docker container
+        run: docker run --rm my-app pytest
+
+      # Push the Docker image (optional)
+      - name: Push Docker image to DockerHub
+        run: docker push my-app:latest
